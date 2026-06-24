@@ -1857,7 +1857,7 @@ PHONY += $(u-boot-dirs)
 $(u-boot-dirs): prepare scripts
 	$(Q)$(MAKE) $(build)=$@
 
-tools: prepare
+tools: prepare tools/version.h
 # The "tools" are needed early
 $(filter-out tools, $(u-boot-dirs)): tools
 # The "examples" conditionally depend on U-Boot (say, when USE_PRIVATE_LIBGCC
