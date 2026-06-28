@@ -550,6 +550,14 @@ config EFI_GRUB_ARM32_WORKAROUND
 	  workaround currently is also needed on systems with caches that
 	  cannot be managed via CP15.
 
+config EFI_EXIT_BOOT_SERVICES_CLEANUP
+	bool
+	help
+	  Some platforms need architecture-specific cleanup before an EFI
+	  payload takes over, for example to flush or disable non-coherent
+	  caches. Select this only when the platform's cleanup_before_linux()
+	  is required for EFI boot to hand off reliably.
+
 config EFI_ESRT
 	bool "Enable the UEFI ESRT generation"
 	depends on EFI_CAPSULE_FIRMWARE_MANAGEMENT

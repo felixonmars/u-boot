@@ -23,6 +23,10 @@
 #include <usb.h>
 #include <watchdog.h>
 #include <asm/global_data.h>
+#if defined(CONFIG_EFI_GRUB_ARM32_WORKAROUND) || \
+	defined(CONFIG_EFI_EXIT_BOOT_SERVICES_CLEANUP)
+#include <asm/u-boot.h>
+#endif
 #include <linux/libfdt_env.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -2148,10 +2152,14 @@ error:
  */
 static void efi_exit_caches(void)
 {
-#if defined(CONFIG_EFI_GRUB_ARM32_WORKAROUND)
+#if defined(CONFIG_EFI_GRUB_ARM32_WORKAROUND) || \
+	defined(CONFIG_EFI_EXIT_BOOT_SERVICES_CLEANUP)
 	/*
-	 * Boooting Linux via GRUB prior to version 2.04 fails on 32bit ARM if
+	 * Booting Linux via GRUB prior to version 2.04 fails on 32bit ARM if
 	 * caches are enabled.
+	 *
+	 * Some platforms also require cleanup_before_linux() to put
+	 * non-coherent caches into a state suitable for the EFI payload.
 	 *
 	 * TODO:
 	 * According to the UEFI spec caches that can be managed via CP15
