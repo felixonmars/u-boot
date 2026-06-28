@@ -6,10 +6,21 @@
 #include <clk-uclass.h>
 #include <dm.h>
 #include <errno.h>
+#include <asm/io.h>
 #include <clk/sunxi.h>
 #include <dt-bindings/clock/sun20i-d1-ccu.h>
 #include <dt-bindings/reset/sun20i-d1-ccu.h>
+#include <linux/delay.h>
 #include <linux/bitops.h>
+
+#define D1_PLL_CPUX_CTRL			0x000
+#define D1_PLL_CPUX_CTRL_EN			BIT(31)
+#define D1_PLL_CPUX_LDO_EN			BIT(30)
+#define D1_PLL_CPUX_LOCK_EN			BIT(29)
+#define D1_PLL_CPUX_LOCK			BIT(28)
+#define D1_PLL_CPUX_OUT_EN			BIT(27)
+#define D1_PLL_CPUX_N_MASK			GENMASK(15, 8)
+#define D1_PLL_CPUX_N(n)			(((n) - 1) << 8)
 
 static struct ccu_clk_gate d1_gates[] = {
 	[CLK_APB0]		= GATE_DUMMY,
@@ -75,9 +86,30 @@ static struct ccu_reset d1_resets[] = {
 	[RST_BUS_LRADC]		= RESET(0xa9c, BIT(16)),
 };
 
+static void d1_ccu_init(struct udevice *dev)
+{
+	struct ccu_plat *plat = dev_get_plat(dev);
+	u32 val;
+
+	if (!IS_ENABLED(CONFIG_TARGET_SUN20I_D1))
+		return;
+
+	val = readl(plat->base + D1_PLL_CPUX_CTRL);
+	val &= ~D1_PLL_CPUX_N_MASK;
+	val |= D1_PLL_CPUX_CTRL_EN | D1_PLL_CPUX_LDO_EN |
+	       D1_PLL_CPUX_LOCK_EN | D1_PLL_CPUX_OUT_EN |
+	       D1_PLL_CPUX_N(42);
+	writel(val, plat->base + D1_PLL_CPUX_CTRL);
+
+	while (!(readl(plat->base + D1_PLL_CPUX_CTRL) & D1_PLL_CPUX_LOCK))
+		;
+	udelay(20);
+}
+
 const struct ccu_desc d1_ccu_desc = {
 	.gates	= d1_gates,
 	.resets	= d1_resets,
 	.num_gates = ARRAY_SIZE(d1_gates),
 	.num_resets = ARRAY_SIZE(d1_resets),
+	.xpl_init = d1_ccu_init,
 };
