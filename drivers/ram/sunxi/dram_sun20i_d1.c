@@ -13,7 +13,26 @@
  */
 
 #include <asm/io.h>
+
+#ifdef CONFIG_RISCV
+#undef readl
+#undef writel
+#undef clrbits_le32
+#undef setbits_le32
+#undef clrsetbits_le32
+
+#define sunxi_d1_iomem(addr)	((volatile void __iomem *)(ulong)(addr))
+#define readl(addr)		readl_cpu(sunxi_d1_iomem(addr))
+#define writel(val, addr)	writel_cpu((val), sunxi_d1_iomem(addr))
+#define clrbits_le32(addr, clear) \
+	writel(readl(addr) & ~(clear), (addr))
+#define setbits_le32(addr, set) \
+	writel(readl(addr) | (set), (addr))
+#define clrsetbits_le32(addr, clear, set) \
+	writel((readl(addr) & ~(clear)) | (set), (addr))
+#endif
 #include <config.h>
+#include <cpu_func.h>
 #ifdef CONFIG_RAM
   #include <dm.h>
   #include <ram.h>
@@ -917,6 +936,13 @@ static unsigned int DRAMC_get_dram_size(void)
 	return size + calculate_rank_size(val);
 }
 
+static bool dram_size_valid(unsigned int size)
+{
+	unsigned int max_size_mb = CONFIG_SUNXI_DRAM_MAX_SIZE >> 20;
+
+	return size && size <= max_size_mb;
+}
+
 /*
  * The below routine reads the command status register to extract
  * DQ width and rank count. This follows the DQS training command in
@@ -1059,11 +1085,20 @@ static int auto_scan_dram_size(const dram_para_t *para, dram_config_t *config)
 	unsigned int rval, i, j, rank, maxrank, offs;
 	unsigned int shft;
 	unsigned long ptr, mc_work_mode, chk;
+	bool dcache_was_enabled = dcache_status();
 
 	if (mctl_core_init(para, config) == 0) {
 		printf("DRAM initialisation error : 0\n");
 		return 0;
 	}
+
+	/*
+	 * The sizing probe depends on seeing address aliases. With D-cache on,
+	 * cached lines can hide the alias and make the probe report the maximum
+	 * geometry, which later sends the simple DRAM test outside the DRAM map.
+	 */
+	if (dcache_was_enabled)
+		dcache_disable();
 
 	maxrank	= (config->dram_para2 & 0xf000) ? 2 : 1;
 	mc_work_mode = 0x3102000;
@@ -1188,6 +1223,9 @@ static int auto_scan_dram_size(const dram_para_t *para, dram_config_t *config)
 			debug("rank1 config different from rank0\n");
 		}
 	}
+
+	if (dcache_was_enabled)
+		dcache_enable();
 
 	return 1;
 }
@@ -1315,7 +1353,11 @@ static int init_DRAM(int type, const dram_para_t *para)
 		rc = (rc >> 16) & ~BIT(15);
 	} else {
 		rc = DRAMC_get_dram_size();
-		debug("DRAM: size = %dMB\n", rc);
+		if (!dram_size_valid(rc)) {
+			printf("DRAM: invalid size %dMB, max %dMB\n",
+			       rc, CONFIG_SUNXI_DRAM_MAX_SIZE >> 20);
+			return 0;
+		}
 		config.dram_para2 = (config.dram_para2 & 0xffffU) | rc << 16;
 	}
 	mem_size_mb = rc;
