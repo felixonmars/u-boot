@@ -107,6 +107,11 @@ void __noreturn spl_invoke_opensbi(struct spl_image_info *spl_image)
 	opensbi_info.boot_hart = gd->arch.boot_hart;
 
 	opensbi_entry = (opensbi_entry_t)spl_image->entry_point;
+	/*
+	 * The FIT, FDT and dynamic info may have been written through D-cache.
+	 * Make them visible before OpenSBI starts relocating and parsing them.
+	 */
+	flush_dcache_all();
 	invalidate_icache_all();
 
 #ifdef CONFIG_SPL_SMP
