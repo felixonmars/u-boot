@@ -1258,6 +1258,4 @@ config SPL_SUNXI_LED_STATUS_ACTIVE_HIGH
 
 endif # SPL_SUNXI_LED_STATUS
 
-source "board/sunxi/Kconfig"
-
 endif

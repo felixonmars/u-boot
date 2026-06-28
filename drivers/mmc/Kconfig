@@ -804,7 +804,7 @@ config ZYNQ_HISPD_BROKEN
 
 config MMC_SUNXI
 	bool "Allwinner sunxi SD/MMC Host Controller support"
-	depends on ARCH_SUNXI
+	depends on BOARD_SUNXI
 	default y
 	help
 	  This selects support for the SD/MMC Host Controller on

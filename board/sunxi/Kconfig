@@ -1,3 +1,10 @@
+config BOARD_SUNXI
+	bool
+
+if BOARD_SUNXI
+
+menu "sunxi board options"
+
 choice
 	prompt "SPL Image Type"
 	default SPL_IMAGE_TYPE_SUNXI_EGON
@@ -22,3 +29,7 @@ config SPL_IMAGE_TYPE
 	string
 	default "sunxi_egon" if SPL_IMAGE_TYPE_SUNXI_EGON
 	default "sunxi_toc0" if SPL_IMAGE_TYPE_SUNXI_TOC0
+
+endmenu
+
+endif

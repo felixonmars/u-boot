@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
-if ARCH_SUNXI
+if BOARD_SUNXI
 
 config PINCTRL_SUNXI
 	select PINCTRL_FULL

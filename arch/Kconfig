@@ -587,6 +587,7 @@ source "arch/Kconfig.nxp"
 endif
 
 source "board/keymile/Kconfig"
+source "board/sunxi/Kconfig"
 
 choice
 	prompt "Endianness selection"

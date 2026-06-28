@@ -170,7 +170,7 @@ config RESET_NPCM
 
 config RESET_SUNXI
 	bool "RESET support for Allwinner SoCs"
-	depends on DM_RESET && ARCH_SUNXI
+	depends on DM_RESET && BOARD_SUNXI
 	default y
 	help
 	  This enables support for common reset driver for

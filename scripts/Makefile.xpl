@@ -275,7 +275,7 @@ endif
 
 INPUTS-$(CONFIG_ARCH_SOCFPGA_SOC64) += $(obj)/u-boot-spl-dtb.hex
 
-ifdef CONFIG_ARCH_SUNXI
+ifdef CONFIG_BOARD_SUNXI
 INPUTS-y	+= $(obj)/sunxi-spl.bin
 
 ifdef CONFIG_NAND_SUNXI
