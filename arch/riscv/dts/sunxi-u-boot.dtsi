@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+#include "binman.dtsi"
+
+/ {
+	cpus {
+		bootph-all;
+	};
+
+	soc {
+		bootph-all;
+	};
+};
+
+&binman {
+	u-boot-sunxi-with-spl {
+		filename = "u-boot-sunxi-with-spl.bin";
+		pad-byte = <0xff>;
+
+		blob@0 {
+			/*
+			 * This value matches SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
+			 * and SYS_SPI_U_BOOT_OFFS if those are defined.
+			 */
+			min-size = <0x8000>;
+			filename = "spl/sunxi-spl.bin";
+		};
+
+		blob@1 {
+			filename = "u-boot.itb";
+		};
+	};
+};
+
+&ccu {
+	bootph-all;
+};
+
+&cpu0 {
+	bootph-all;
+};
+
+&dcxo {
+	bootph-all;
+};
+
+&mbus {
+	bootph-all;
+};
+
+&mmc0 {
+	bootph-all;
+};
+
+&mmc0_pins {
+	bootph-all;
+};
+
+&pio {
+	bootph-all;
+
+	uart0-pb8-pins {
+		bootph-all;
+	};
+
+	uart3-pb-pins {
+		bootph-all;
+	};
+};
+
+&rtc {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+	clock-frequency = <24000000>;
+};
+
+&uart3 {
+	bootph-all;
+};
